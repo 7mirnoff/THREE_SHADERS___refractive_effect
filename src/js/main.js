@@ -1,11 +1,13 @@
 import * as THREE from 'three'
+const OrbitControls = require(`three-orbit-controls`)(THREE)
 import './modules/polyfill'
 
 import vertexShader from './modules/shader.vert'
 import fragmentShader from './modules/shader.frag'
+import { Plane } from 'three';
 
 let container
-let camera, scene, renderer
+let camera, scene, renderer, controls, mesh
 let uniforms
 let mouse = {
   x: 0,
@@ -19,7 +21,7 @@ const startRender = () => {
   animate()
 }
 
-let MyTexture = loader.load('../img/water.jpg', startRender)
+let MyTexture = loader.load('../img/img1.jpg', startRender)
 
 function getMouseXY (e) {
   mouse.x = e.pageX
@@ -31,10 +33,10 @@ function getMouseXY (e) {
 function init () {
   container = document.getElementById('container')
 
-  camera = new THREE.Camera()
-  camera.position.z = 1
+  camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.001, 100)
+  camera.position.set(0, 0, 1)
   scene = new THREE.Scene()
-  let geometry = new THREE.PlaneBufferGeometry(2, 2)
+  let geometry = new THREE.PlaneBufferGeometry(1, 1, 64, 64)
 
   uniforms = {
     u_time: {
@@ -59,38 +61,49 @@ function init () {
     },
     texture: {
       value: MyTexture
-    },
-    map: {
-      value: loader.load('../img/water-map.jpg')
     }
+    // map: {
+    //   value: loader.load('../img/water-map.jpg')
+    // }
   }
 
   let material = new THREE.ShaderMaterial({
     uniforms: uniforms,
+    // wireframe: true,
     vertexShader: vertexShader,
     fragmentShader: fragmentShader
   })
 
-  let mesh = new THREE.Mesh(geometry, material)
+  mesh = new THREE.Mesh(geometry, material)
   scene.add(mesh)
   renderer = new THREE.WebGLRenderer()
   renderer.setPixelRatio(window.devicePixelRatio)
 
   container.appendChild(renderer.domElement)
+
+  controls = new OrbitControls(camera, renderer.domElement)
   onWindowResize()
-  window.addEventListener('resize', onWindowResize, false)
+  window.addEventListener('resize', onWindowResize)
 }
 
 function onWindowResize (event) {
-  renderer.setSize(window.innerWidth, window.innerHeight)
-  uniforms.u_resolution.value.x = renderer.domElement.width
-  uniforms.u_resolution.value.y = renderer.domElement.height
-  uniforms.u_mouse.value.x = mouse.x
-  uniforms.u_mouse.value.y = mouse.y
+  let w = window.innerWidth
+  let h = window.innerHeight
+  renderer.setSize(w, h)
+  camera.aspect = w / h
+  let dist = camera.position.z - mesh.position.z
+  let height = 1
+  camera.fov = 2 * (180 / Math.PI) * Math.atan(height / (2 * dist))
+
+  if (w / h > 1) {
+    mesh.scale.x = mesh.scale.y = w / h
+  }
+
+  camera.updateProjectionMatrix()
 }
 
 function animate () {
-  requestAnimationFrame(animate)
+  window.requestAnimationFrame(animate)
   render()
 }
 
