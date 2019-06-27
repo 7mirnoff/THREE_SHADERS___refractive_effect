@@ -2,35 +2,47 @@ import * as THREE from 'three'
 const OrbitControls = require(`three-orbit-controls`)(THREE)
 import './modules/polyfill'
 
+import {
+  TimelineMax
+} from "gsap/all"
+
 import vertexShader from './modules/shader.vert'
 import fragmentShader from './modules/shader.frag'
-import { Plane } from 'three';
+import {
+  Plane
+} from 'three';
 
 let container
 let camera, scene, renderer, controls, mesh
+let destination = {
+  x: 0,
+  y: 0
+}
 let uniforms
 let mouse = {
   x: 0,
   y: 0
 }
 let loader = new THREE.TextureLoader()
-document.onmousemove = getMouseXY
 
 const startRender = () => {
   init()
   animate()
 }
 
-let MyTexture = loader.load('../img/img1.jpg', startRender)
-
-function getMouseXY (e) {
-  mouse.x = e.pageX
-  mouse.y = e.pageY
-  uniforms.u_mouse.value.x = mouse.x
-  uniforms.u_mouse.value.y = mouse.y
-}
+let MyTexture = loader.load('../img/img2.jpg', startRender)
+let material
 
 function init () {
+  document.onmousemove = getMouseXY
+
+  function getMouseXY (e) {
+    mouse.x = e.pageX
+    mouse.y = e.pageY
+    // material.uniforms.u_mouse.value.x = mouse.x
+    // material.uniforms.u_mouse.value.y = mouse.y
+  }
+
   container = document.getElementById('container')
 
   camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.001, 100)
@@ -53,21 +65,25 @@ function init () {
     },
     u_resolution: {
       type: 'v2',
-      value: new THREE.Vector2()
+      value: new THREE.Vector2(window.innerWidth, window.innerHeight)
     },
     u_size: {
       type: 'v2',
       value: new THREE.Vector2(MyTexture.image.width, MyTexture.image.height)
     },
-    texture: {
+    texture1: {
       value: MyTexture
+    },
+    waveLength: {
+      type: 'f',
+      value: 5.0
     }
     // map: {
     //   value: loader.load('../img/water-map.jpg')
     // }
   }
 
-  let material = new THREE.ShaderMaterial({
+  material = new THREE.ShaderMaterial({
     uniforms: uniforms,
     // wireframe: true,
     vertexShader: vertexShader,
@@ -96,7 +112,7 @@ function onWindowResize (event) {
   camera.fov = 2 * (180 / Math.PI) * Math.atan(height / (2 * dist))
 
   if (w / h > 1) {
-    mesh.scale.x = mesh.scale.y = w / h
+    mesh.scale.x = mesh.scale.y = w / h * 1.05
   }
 
   camera.updateProjectionMatrix()
@@ -108,14 +124,32 @@ function animate () {
 }
 
 function render () {
-  uniforms.u_time.value += 0.05
+  material.uniforms.u_mouse.value.x += ((destination.x - material.uniforms.u_mouse.value.x) * 0.02)
+  material.uniforms.u_mouse.value.y += ((destination.y - material.uniforms.u_mouse.value.y) * 0.02)
+
+  material.uniforms.u_time.value += 0.05
   renderer.render(scene, camera)
 }
+
 document.addEventListener('click', function () {
-  // let tl = new TimelineMax()
-  // tl
-  //   .to(uniforms.u_animation, 3, {
-  //     value: 1,
-  //     ease: Power3.easeInOut
-  //   })
+  let tl = new TimelineMax()
+  tl
+    .to(material.uniforms.waveLength, 0.5, {
+      value: 22
+    })
+    .to(material.uniforms.waveLength, 0.5, {
+      value: 5
+    })
 })
+
+let vw = window.innerWidth
+let vh = window.innerHeight
+
+function onMouseMove (evt) {
+  let x = (evt.clientX - vw / 2) / (vw / 2)
+  let y = (evt.clientY - vh / 2) / (vh / 2)
+  destination.x = y
+  destination.y = x
+}
+
+window.addEventListener(`mousemove`, onMouseMove)
