@@ -30,7 +30,7 @@ const startRender = () => {
   animate()
 }
 
-let MyTexture = loader.load('../img/img2.jpg', startRender)
+let MyTexture = loader.load('../img/img3.jpg', startRender)
 let material
 
 function init () {
