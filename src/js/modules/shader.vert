@@ -5,6 +5,8 @@ uniform vec2 u_mouse;
 uniform float u_time;
 varying vec4 vPosition;
 uniform float waveLength;
+uniform float ratio;
+
 void main() {
   // растягивает изоюражение на весь экран
   vUv = uv;
