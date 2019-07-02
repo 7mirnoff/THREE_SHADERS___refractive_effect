@@ -136,7 +136,7 @@ function render () {
   renderer.render(scene, camera)
 }
 
-let counter = 1
+let counter = 0
 let isAnimating = false
 
 document.addEventListener('click', function () {
@@ -158,6 +158,7 @@ document.addEventListener('click', function () {
       value: 0,
       onComplete: function () {
         material.uniforms.texture.value = textureArray[counter]
+        material.uniforms.u_size.value = new THREE.Vector2(textureArray[counter].image.width, textureArray[counter].image.height)
       }
     })
     .to(material.uniforms.ratio, 0.3, {

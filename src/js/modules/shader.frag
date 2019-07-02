@@ -29,7 +29,7 @@ void main() {
   c = 1.8 - sqrt(c);
 
 
-  vec4 img = texture2D(texture, vUv) * texture2D(texture, vec2(vUv.s + cos(c)*u_mouse.x * 0.20, vUv.t + cos(c)*u_mouse.y * 0.20)) * 0.30; // последний множитель это яркость
+  vec4 img = texture2D(texture, vUv) * texture2D(texture, vec2(vUv.s + cos(c)*u_mouse.x * 0.24, vUv.t + cos(c)*u_mouse.y * 0.25)) * 0.30; // последний множитель это яркость
   vec4 ct = c * c * c * img;
 
   vec4 imgEffect = ct - img * img - vec4(img.rgb * 0.5, img.a * vPosition.z) * ratio;
